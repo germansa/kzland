@@ -33,8 +33,4 @@
 		<voice sentence="Yoooohhuuuu!" />
 		<voice sentence="Grrrrrrr" />
 	</voices>
-	<loot>
-		<item name="meat" countmax="2" chance="70000" />
-		<item name="wolf paw" chance="1000" />
-	</loot>
 </monster>

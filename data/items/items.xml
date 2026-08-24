@@ -385,4 +385,13 @@
 			<attribute key="type" value="door" />
 			<attribute key="blockprojectile" value="true" />
 		</item>
+	<!-- items usados por el mapa, copiados del datapack original -->
+	<item id="6250" article="a" name="closed door">
+			<attribute key="type" value="door" />
+			<attribute key="blockprojectile" value="true" />
+		</item>
+	<item id="6253" article="a" name="closed door">
+			<attribute key="type" value="door" />
+			<attribute key="blockprojectile" value="true" />
+		</item>
 </items>

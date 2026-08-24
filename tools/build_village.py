@@ -49,8 +49,12 @@ WALL_H = 1050           # muro este-oeste
 WALL_V = 1049           # muro norte-sur
 WALL_NW = 1051          # esquina noroeste
 WALL_SE = 1053          # esquina sureste
-DOOR_H = 6257           # puerta en muro este-oeste
-DOOR_V = 6255           # puerta en muro norte-sur
+# Puertas normales, no de casa: las de casa (6255/6257) solo se abren en
+# tiles pertenecientes a una casa, y estos edificios no lo son. El script
+# data/scripts/actions/others/doors.lua las abre usando las tablas de
+# data/global.lua, donde 6250 y 6253 estan en closedDoors.
+DOOR_H = 6253           # puerta en muro este-oeste
+DOOR_V = 6250           # puerta en muro norte-sur
 WINDOW_H = 6444
 WINDOW_V = 6445
 
