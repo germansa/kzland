@@ -43,6 +43,11 @@ dentro del juego.
 | `build_village.py` | Genera la aldea inicial y sus alrededores |
 | `sync_items_xml.py` | Declara en `items.xml` los items que usa el mapa |
 | `used_item_ids.txt` | Ids que usa el mapa actual (lo genera build_village) |
+| `client_tweaks.py` | Quita paneles de la interfaz del cliente OTClient |
+
+Antes de tocar `client_tweaks.py`, lee
+[docs/interfaz-cliente.md](../docs/interfaz-cliente.md): explica las tres
+capas de la interfaz y los dos errores que ya dejaron el panel derecho vacío.
 
 ## Regenerar el mapa
 
