@@ -45,15 +45,15 @@ DISABLED_MODULES = [
     "game_proficiency",
     "game_stash",
     "game_store",
-    "game_shop",
     "game_blessing",
     "game_highscore",
     "game_quickloot",
     "game_tutorial",
+    # game_shop NO se desactiva: mainpanel.toggleStore() lo llama sin
+    # comprobar cuando el servidor no envia GameIngameStore, que es
+    # nuestro caso, y el boton Store del panel reventaria al pulsarlo.
     # extras cosmeticos del cliente
     "game_paperdolls",
-    "game_attachedeffects",
-    "game_healthcircle",
     "game_analyser",
     "game_lootsplitter",
     # contenido de Tibia que definiremos nosotros
@@ -61,12 +61,23 @@ DISABLED_MODULES = [
     "game_skills",
 ]
 
+# Modulos que NO se deben desactivar aunque sean contenido de Tibia: hay
+# codigo del nucleo que los usa sin comprobar si existen, asi que al faltar
+# lanzan un error de Lua que corta la inicializacion de la interfaz y deja el
+# panel derecho vacio.
+#   game_healthcircle    -> game_interface/widgets/statsbar.lua (OnGameStart)
+#                           y client_options/data_options.lua
+#   game_attachedeffects -> game_outfit/outfit.lua
+#   game_shop            -> game_mainpanel/mainpanel.lua (toggleStore)
+# Ninguna de esas dependencias esta declarada en los .otmod, solo en el codigo,
+# por lo que revisar dependencias declaradas no basta: hay que buscar
+# "modules.<nombre>" en los modulos que se quedan.
+
 # Modulos que se cargan solos por su propio autoload y no dependen de que
 # game_interface los liste.
 SELF_LOADING = [
     ("game_analyser", "analyser.otmod"),
     ("game_cyclopedia", "game_cyclopedia.otmod"),
-    ("game_healthcircle", "game_healthcircle.otmod"),
     ("game_lootsplitter", "lootsplitter.otmod"),
     ("game_proficiency", "proficiency.otmod"),
     ("game_taskboard", "tasks.otmod"),
