@@ -318,4 +318,71 @@
 	<item id="44715" name="depot box XX">
 		<attribute key="containerSize" value="32" />
 	</item>
+	<!-- items usados por el mapa, copiados del datapack original -->
+	<item fromid="108" toid="109" name="flowers" />
+	<item id="231" name="sand" />
+	<item fromid="351" toid="353" name="dirt floor" />
+	<item id="424" article="a" name="stone tile" />
+	<item id="493" name="water">
+			<attribute key="type" value="trashholder" />
+			<attribute key="effect" value="bluebubble" />
+			<attribute key="allowpickupable" value="true" />
+		</item>
+	<item id="724" name="cobbled pavement" />
+	<item fromid="920" toid="923" article="a" name="flat roof" />
+	<item fromid="1049" toid="1059" article="a" name="stone wall" />
+	<item fromid="1368" toid="1369" article="a" name="draw well">
+			<attribute key="fluidSource" value="water" />
+		</item>
+	<item fromid="1479" toid="1480" article="a" name="street lamp" />
+	<item fromid="1617" toid="1618" article="a" name="counter" />
+	<item fromid="1622" toid="1633" article="a" name="table" />
+	<item id="1739" article="a" name="crate">
+			<attribute key="weight" value="8000" />
+			<attribute key="containerSize" value="15" />
+			<attribute key="destroyTo" value="2250" />
+		</item>
+	<item id="1760" article="a" name="bed">
+			<attribute key="type" value="bed" />
+			<attribute key="partnerDirection" value="east" />
+			<attribute key="maleSleeper" value="1764" />
+			<attribute key="femaleSleeper" value="7779" />
+		</item>
+	<item id="1761" article="a" name="bed">
+			<attribute key="type" value="bed" />
+			<attribute key="partnerDirection" value="west" />
+			<attribute key="maleSleeper" value="1765" />
+			<attribute key="femaleSleeper" value="7780" />
+		</item>
+	<item id="1770" article="a" name="barrel">
+			<attribute key="containerSize" value="25" />
+			<attribute key="destroyTo" value="2250" />
+		</item>
+	<item id="2038" article="a" name="lit wall lamp" />
+	<item id="2700" article="a" name="fir tree" />
+	<item id="2767" article="a" name="bush" />
+	<item id="2768" article="a" name="small fir tree" />
+	<item fromid="4456" toid="4467" name="rocks" />
+	<item fromid="4526" toid="4553" name="grass" />
+	<item fromid="4608" toid="4616" name="shallow water">
+			<attribute key="description" value="You see the silvery movement of fish." />
+			<attribute key="type" value="trashholder" />
+			<attribute key="effect" value="bluebubble" />
+			<attribute key="allowpickupable" value="true" />
+			<attribute key="fluidSource" value="water" />
+		</item>
+	<item fromid="6180" toid="6181" article="a" name="tree" />
+	<item fromid="6216" toid="6219" name="grass" />
+	<item id="6255" article="a" name="closed door">
+			<attribute key="type" value="door" />
+			<attribute key="blockprojectile" value="true" />
+		</item>
+	<item id="6257" article="a" name="closed door">
+			<attribute key="type" value="door" />
+			<attribute key="blockprojectile" value="true" />
+		</item>
+	<item fromid="6444" toid="6445" article="a" name="stone wall window">
+			<attribute key="type" value="door" />
+			<attribute key="blockprojectile" value="true" />
+		</item>
 </items>
