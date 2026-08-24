@@ -71,6 +71,12 @@ DISABLED_MODS = [
 
 MODS_OTMOD = os.path.join("mods", "client_mods", "mods.otmod")
 
+# Mods propios que se copian al cliente y se anaden al cargador. Viven en el
+# repositorio para que si el cliente se reinstala no se pierdan.
+OWN_MODS_SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "client_mods")
+OWN_MODS = ["kz_lighting"]
+
 # Modulos que NO se deben desactivar aunque sean contenido de Tibia: hay
 # codigo del nucleo que los usa sin comprobar si existen, asi que al faltar
 # lanzan un error de Lua que corta la inicializacion de la interfaz y deja el
@@ -160,6 +166,44 @@ def apply_mods(client, undo):
                           DISABLED_MODS, undo, "mods")
 
 
+def install_own_mods(client, undo):
+    """Copia los mods del repositorio y los registra en el cargador."""
+    loader = os.path.join(client, MODS_OTMOD)
+    installed = 0
+
+    for name in OWN_MODS:
+        target = os.path.join(client, "mods", name)
+        if undo:
+            if os.path.isdir(target):
+                shutil.rmtree(target)
+                installed += 1
+            continue
+        source = os.path.join(OWN_MODS_SRC, name)
+        if not os.path.isdir(source):
+            raise SystemExit("falta el mod {} en {}".format(name, OWN_MODS_SRC))
+        if os.path.isdir(target):
+            shutil.rmtree(target)
+        shutil.copytree(source, target)
+        installed += 1
+
+    if undo:
+        return "mods propios: {} eliminados".format(installed)
+
+    # registrar en la lista load-later, sin duplicar
+    with open(loader, encoding="utf-8") as fh:
+        text = fh.read()
+    added = 0
+    for name in OWN_MODS:
+        if "- {}".format(name) not in text:
+            text = text.rstrip("\n") + "\n    - {}\n".format(name)
+            added += 1
+    if added:
+        with open(loader, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text)
+
+    return "mods propios: {} instalados".format(installed)
+
+
 def restore_all(client):
     """Deshace cualquier cambio con copia .orig, este o no en las listas.
 
@@ -213,12 +257,14 @@ def main():
 
     print("cliente: {}".format(client))
     if args.restore:
+        print(install_own_mods(client, True))
         print(restore_all(client))
         print("hecho. reinicia el cliente para ver el cambio.")
         return 0
 
     print(apply_interface(client, args.restore))
     print(apply_mods(client, args.restore))
+    print(install_own_mods(client, args.restore))
     print(apply_self_loading(client, args.restore))
     print("hecho. reinicia el cliente para ver el cambio.")
     return 0

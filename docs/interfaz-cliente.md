@@ -204,7 +204,56 @@ configuración al salir; matarlo repetidamente deja estado a medias.
 
 ---
 
-## 7. Otros puntos de configuración
+## 7. Luz, oscuridad y el falso día/noche
+
+**Este servidor no tiene sistema de día/noche.** No hay ciclo de luz global: en
+`src/` solo existe `Game::changeLight` para la luz *por criatura*, y el
+servidor nunca envía ni el paquete de luz del mundo (`0x82`) ni el de la hora
+(`0xEF`). No hay nada que desactivar del lado del servidor.
+
+Consecuencia: `g_map.getLight()` se queda a cero y **la superficie sale negra**.
+Lo único que ilumina son los ítems con luz, que llevan color, y por eso
+aparecían tintes morados o verdosos que cambiaban al moverse — eran las
+farolas y lámparas entrando y saliendo de rango, no un ciclo horario.
+
+Cómo decide el cliente la luz ambiente (`src/client/mapview.cpp`,
+`MapView::updateLight`):
+
+```cpp
+Light ambient = camaraZ > seaFloor ? Light() : g_map.getLight();
+ambient.intensity = max(minimumAmbientLight * 255, ambient.intensity);
+```
+
+Dos cosas importantes:
+
+- **Bajo tierra** (z > `sea-floor`, que es 7 en `data/setup.otml`) el cliente
+  **ignora la luz del mundo** y usa oscuridad total.
+- Pero el **mínimo ambiental se aplica en los dos casos**, así que subirlo a
+  secas iluminaría también las cuevas.
+
+`g_map.setLight` **no está expuesto a Lua** (solo `ThingType` y
+`AttachedEffect` tienen `setLight`), así que desde el cliente la única palanca
+es `mapPanel:setMinimumAmbientLight()`. La solución es moverla según el piso,
+que es lo que hace el mod `kz_lighting`: superficie iluminada, subsuelo a
+oscuras. Sin tocar el core ni el protocolo.
+
+Si algún día se quiere un ciclo real de día/noche, el camino correcto es que
+el servidor envíe el opcode **130 (0x82)** con intensidad y color; el cliente
+ya lo parsea (`ProtocolGame::parseWorldLight`) y dispara
+`g_game.onWorldLightChange`. Eso sí requiere tocar el core en C++.
+
+El indicador horario era la rosa del minimapa (`rosePanel`), que agrupa el
+degradado (`ambients`) y el anillo (`rose`). Nunca recibía datos.
+
+### Mods propios
+
+`tools/client_mods/` guarda los mods del proyecto; `client_tweaks.py` los copia
+a `mods/` del cliente y los registra en el cargador. Así viven en el
+repositorio y sobreviven a una reinstalación.
+
+---
+
+## 8. Otros puntos de configuración
 
 | Qué | Dónde |
 |---|---|
@@ -216,7 +265,7 @@ configuración al salir; matarlo repetidamente deja estado a medias.
 
 ---
 
-## 8. Estado actual
+## 9. Estado actual
 
 Desactivados: prey, imbuing, imbuement tracker, forge, wheel, cyclopedia,
 taskboard, reward wall, proficiency, stash, store, blessings, highscore,

@@ -1,0 +1,10 @@
+Module
+  name: kz_lighting
+  description: Luz por piso y sin indicador de dia/noche (Kzland)
+  author: proyecto Kzland
+  sandboxed: true
+  scripts: [ kz_lighting ]
+  @onLoad: init()
+  @onUnload: terminate()
+  dependencies:
+    - game_interface
