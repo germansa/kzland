@@ -59,7 +59,17 @@ DISABLED_MODULES = [
     # contenido de Tibia que definiremos nosotros
     "game_spelllist",
     "game_skills",
+    # el registro de misiones y su rastreador; no hay quests todavia
+    "game_questlog",
 ]
+
+# Los mods viven en mods/ y los carga client_mods, no game_interface.
+DISABLED_MODS = [
+    # cavebot / bot de automatizacion completo
+    "game_bot",
+]
+
+MODS_OTMOD = os.path.join("mods", "client_mods", "mods.otmod")
 
 # Modulos que NO se deben desactivar aunque sean contenido de Tibia: hay
 # codigo del nucleo que los usa sin comprobar si existen, asi que al faltar
@@ -114,13 +124,14 @@ def restore(path):
     return False
 
 
-def apply_interface(client, undo):
-    path = os.path.join(client, INTERFACE_OTMOD)
+def _strip_entries(path, names, undo, label):
+    """Quita entradas de una lista load-later de un .otmod."""
     if not os.path.exists(path):
         raise SystemExit("no se encontro {}".format(path))
 
     if undo:
-        return "restaurado" if restore(path) else "sin cambios que deshacer"
+        return "{}: restaurado".format(label) if restore(path) \
+            else "{}: sin cambios que deshacer".format(label)
 
     backup(path)
     with open(path, encoding="utf-8") as fh:
@@ -129,25 +140,52 @@ def apply_interface(client, undo):
     keep, removed = [], 0
     for line in lines:
         entry = line.strip()
-        if entry.startswith("- ") and entry[2:] in DISABLED_MODULES:
+        if entry.startswith("- ") and entry[2:] in names:
             removed += 1
             continue
         keep.append(line)
 
     with open(path, "w", encoding="utf-8", newline="\n") as fh:
         fh.writelines(keep)
-    return "{} paneles fuera de la carga".format(removed)
+    return "{}: {} fuera de la carga".format(label, removed)
+
+
+def apply_interface(client, undo):
+    return _strip_entries(os.path.join(client, INTERFACE_OTMOD),
+                          DISABLED_MODULES, undo, "paneles")
+
+
+def apply_mods(client, undo):
+    return _strip_entries(os.path.join(client, MODS_OTMOD),
+                          DISABLED_MODS, undo, "mods")
+
+
+def restore_all(client):
+    """Deshace cualquier cambio con copia .orig, este o no en las listas.
+
+    Barrer el disco en vez de recorrer las listas evita dejar cambios
+    huerfanos cuando un modulo deja de estar en ellas.
+    """
+    restored = 0
+    for base in ("modules", "mods"):
+        root = os.path.join(client, base)
+        for current, _dirs, files in os.walk(root):
+            for name in files:
+                if name.endswith(".orig"):
+                    target = os.path.join(current, name[:-len(".orig")])
+                    if restore(target):
+                        restored += 1
+    return "{} archivos restaurados".format(restored)
 
 
 def apply_self_loading(client, undo):
+    if undo:
+        return "autoload: incluido en la restauracion"
+
     changed = 0
     for folder, filename in SELF_LOADING:
         path = os.path.join(client, "modules", folder, filename)
         if not os.path.exists(path):
-            continue
-        if undo:
-            if restore(path):
-                changed += 1
             continue
         backup(path)
         with open(path, encoding="utf-8") as fh:
@@ -158,8 +196,7 @@ def apply_self_loading(client, undo):
             with open(path, "w", encoding="utf-8", newline="\n") as fh:
                 fh.write(updated)
             changed += 1
-    return "{} modulos con autoload {}".format(
-        changed, "restaurado" if undo else "desactivado")
+    return "autoload: {} modulos desactivados".format(changed)
 
 
 def main():
@@ -175,7 +212,13 @@ def main():
         raise SystemExit("la ruta del cliente no existe: {}".format(client))
 
     print("cliente: {}".format(client))
+    if args.restore:
+        print(restore_all(client))
+        print("hecho. reinicia el cliente para ver el cambio.")
+        return 0
+
     print(apply_interface(client, args.restore))
+    print(apply_mods(client, args.restore))
     print(apply_self_loading(client, args.restore))
     print("hecho. reinicia el cliente para ver el cambio.")
     return 0
