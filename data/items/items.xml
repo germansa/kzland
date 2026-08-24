@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <items>
+	<item id="103" name="dirt" />
+	<item id="106" name="grass" />
 	<item id="460" name="nothing special" />
 	<item fromid="2589" toid="2592" article="a" name="locker">
 		<attribute key="type" value="depot" />

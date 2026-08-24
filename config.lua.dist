@@ -67,8 +67,8 @@ timeBetweenExActions = 1000
 
 -- Map
 -- NOTE: set mapName WITHOUT .otbm at the end
--- NOTE: no map is included yet, create one in Remere's Map Editor
--- and place it at data/world/<mapName>.otbm before starting the server
+-- NOTE: kzland.otbm is a generated 40x40 test island, replace it with
+-- a real map built in Remere's Map Editor
 mapName = "kzland"
 mapAuthor = ""
 
