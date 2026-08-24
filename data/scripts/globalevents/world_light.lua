@@ -1,51 +1,18 @@
-local event = GlobalEvent("WorldLight")
+-- Luz del mundo fija.
+--
+-- Este proyecto no tiene ciclo de dia y noche: antes habia uno que recalculaba
+-- la luz cada 10 segundos (dia 250 / noche 40) con una hora de mundo que
+-- avanzaba cada 2.5 segundos, de modo que un dia completo duraba una hora
+-- real. Eso hacia que la pantalla entera cambiara de tono cada pocos minutos.
+--
+-- Ahora se fija una vez la luz de dia y no vuelve a cambiar. El cliente sigue
+-- oscureciendo el subsuelo por su cuenta: en MapView::updateLight ignora la luz
+-- del mundo por debajo de sea-floor (7), asi que las cuevas quedan oscuras y
+-- solo se ven con antorchas, mientras la superficie se ve iluminada.
+--
+-- Los jugadores la reciben al entrar, en el creaturescript WorldLight.
 
-local lightConfig = {
-	day = 250,
-	night = 40
-}
+WORLD_LIGHT_COLOR = 215
+WORLD_LIGHT_LEVEL = 250
 
-local worldConfig = {
-	sunrise = 360,
-	dayTime = 480,
-	sunset = 1080,
-	nightTime = 1200
-}
-
-local lightChange = {
-	sunrise = math.floor((lightConfig.day - lightConfig.night) / (worldConfig.dayTime - worldConfig.sunrise) * 100) / 100,
-	sunset = math.floor((lightConfig.day - lightConfig.night) / (worldConfig.nightTime - worldConfig.sunset) * 100) / 100
-}
-
-do
-	-- load default values
-	local defaultColor = 215
-	local defaultLevel = lightConfig.day
-	Game.setWorldLight(defaultColor, defaultLevel)
-end
-
-local function calculateWorldLightLevel()
-	local worldTime = Game.getWorldTime()
-	if worldTime >= worldConfig.sunrise and worldTime <= worldConfig.dayTime then
-		return ((worldConfig.dayTime - worldConfig.sunrise) - (worldConfig.dayTime - worldTime)) * lightChange.sunrise + lightConfig.night
-	elseif worldTime >= worldConfig.sunset and worldTime <= worldConfig.nightTime then
-		return lightConfig.day - ((worldTime - worldConfig.sunset) * lightChange.sunset)
-	elseif worldTime >= worldConfig.nightTime or worldTime < worldConfig.sunrise then
-		return lightConfig.night
-	end
-	return lightConfig.day
-end
-
-function event.onTime(interval)
-	if not defaultWorldLight then
-		return true
-	end
-
-	local worldLightColor, worldLightLevel = Game.getWorldLight()
-	local level = calculateWorldLightLevel()
-	Game.setWorldLight(worldLightColor, level)
-	return true
-end
-
-event:interval(10000) -- 10 seconds
-event:register()
+Game.setWorldLight(WORLD_LIGHT_COLOR, WORLD_LIGHT_LEVEL)
