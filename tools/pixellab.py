@@ -170,6 +170,11 @@ def cmd_sprite(args):
     if args.estilo:
         payload["style_image"] = encode_image(args.estilo)
         payload["style_strength"] = args.fuerza
+    if args.inicial:
+        # Partir de un sprite ya correcto y reestilizarlo conserva la anatomia,
+        # que es lo que se pierde cuando solo se guia con imagen de estilo.
+        payload["init_image"] = encode_image(args.inicial)
+        payload["init_image_strength"] = args.fuerza_inicial
     if args.paleta:
         payload["color_image"] = encode_image(args.paleta)
     if args.seed is not None:
@@ -219,6 +224,9 @@ def main():
     p.add_argument("--estilo", help="PNG de referencia de estilo")
     p.add_argument("--fuerza", type=int, default=60, help="0-100, peso del estilo")
     p.add_argument("--paleta", help="PNG del que tomar la paleta")
+    p.add_argument("--inicial", help="PNG de partida a reestilizar")
+    p.add_argument("--fuerza-inicial", dest="fuerza_inicial", type=int,
+                   default=300, help="peso de la imagen de partida")
     p.add_argument("--direccion", default="south")
     p.add_argument("--tam", type=int, default=32)
     p.add_argument("--salida", default="sprite")
