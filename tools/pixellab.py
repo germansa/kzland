@@ -175,6 +175,10 @@ def cmd_sprite(args):
         # que es lo que se pierde cuando solo se guia con imagen de estilo.
         payload["init_image"] = encode_image(args.inicial)
         payload["init_image_strength"] = args.fuerza_inicial
+    if args.reparar:
+        # Regenerar solo una zona: blanco en la mascara = lo que se repinta.
+        payload["inpainting_image"] = encode_image(args.reparar)
+        payload["mask_image"] = encode_image(args.mascara)
     if args.paleta:
         payload["color_image"] = encode_image(args.paleta)
     if args.seed is not None:
@@ -225,6 +229,8 @@ def main():
     p.add_argument("--fuerza", type=int, default=60, help="0-100, peso del estilo")
     p.add_argument("--paleta", help="PNG del que tomar la paleta")
     p.add_argument("--inicial", help="PNG de partida a reestilizar")
+    p.add_argument("--reparar", help="PNG a corregir por zonas (inpainting)")
+    p.add_argument("--mascara", help="PNG de mascara: blanco = zona a repintar")
     p.add_argument("--fuerza-inicial", dest="fuerza_inicial", type=int,
                    default=300, help="peso de la imagen de partida")
     p.add_argument("--direccion", default="south")
