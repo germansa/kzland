@@ -50,18 +50,24 @@ TIBIA_LOOK = {
 }
 
 
+# Nombres admitidos para la clave en el .env
+TOKEN_KEYS = ("PIXELLAB_TOKEN", "PIXELART_SECRET", "PIXELLAB_SECRET")
+
+
 def token():
     env_file = os.path.join(ROOT, ".env")
     if os.path.exists(env_file):
         with open(env_file, encoding="utf-8", errors="replace") as fh:
             for line in fh:
-                if line.startswith("PIXELLAB_TOKEN="):
-                    value = line.split("=", 1)[1].strip()
-                    if value:
-                        return value
+                for key in TOKEN_KEYS:
+                    if line.startswith(key + "="):
+                        value = line.split("=", 1)[1].strip()
+                        if value:
+                            return value
     raise SystemExit(
-        "falta PIXELLAB_TOKEN en el .env del proyecto.\n"
-        "Se obtiene en https://api.pixellab.ai/mcp")
+        "falta la clave de PixelLab en el .env del proyecto.\n"
+        "Se acepta cualquiera de: {}\n"
+        "Se obtiene en https://api.pixellab.ai/mcp".format(", ".join(TOKEN_KEYS)))
 
 
 def call(path, payload=None, method="POST"):
@@ -130,7 +136,9 @@ def cmd_crear(args):
     payload["description"] = args.descripcion
     if args.paleta:
         payload["color_image"] = encode_image(args.paleta)
-        payload["force_colors"] = True
+        # Forzar los colores copia la paleta tal cual, incluido el pelo o la
+        # ropa del sprite de referencia; por defecto se deja como sugerencia.
+        payload["force_colors"] = bool(args.forzar_paleta)
     if args.referencia:
         payload["directions"] = {"south": encode_image(args.referencia)}
     if args.seed is not None:
@@ -143,6 +151,35 @@ def cmd_crear(args):
     files = wait_for(character_id, args.salida)
     print("guardado:", ", ".join(files) if files else "(sin imagenes)")
     print("saldo despues:", call("/balance", method="GET"))
+
+
+def cmd_sprite(args):
+    """Un solo sprite con bitforge: admite imagen de estilo y es lo mas barato."""
+    payload = {
+        "description": args.descripcion,
+        "image_size": {"width": args.tam, "height": args.tam},
+        "view": TIBIA_LOOK["view"],
+        "outline": TIBIA_LOOK["outline"],
+        "shading": TIBIA_LOOK["shading"],
+        "detail": TIBIA_LOOK["detail"],
+        "direction": args.direccion,
+        "no_background": True,
+    }
+    if args.negativo:
+        payload["negative_description"] = args.negativo
+    if args.estilo:
+        payload["style_image"] = encode_image(args.estilo)
+        payload["style_strength"] = args.fuerza
+    if args.paleta:
+        payload["color_image"] = encode_image(args.paleta)
+    if args.seed is not None:
+        payload["seed"] = args.seed
+
+    res = call("/create-image-bitforge", payload)
+    files = save_images(res, args.salida)
+    print("guardado:", ", ".join(files) if files else json.dumps(res)[:300])
+    if "usage" in res:
+        print("consumo:", res["usage"])
 
 
 def cmd_estilo(args):
@@ -170,8 +207,21 @@ def main():
     p = sub.add_parser("crear", help="personaje con 4 direcciones")
     p.add_argument("descripcion")
     p.add_argument("--salida", default="pj")
-    p.add_argument("--paleta", help="PNG del que copiar la paleta")
+    p.add_argument("--paleta", help="PNG del que tomar la paleta")
+    p.add_argument("--forzar-paleta", dest="forzar_paleta", action="store_true",
+                   help="copia los colores tal cual en vez de sugerirlos")
     p.add_argument("--referencia", help="PNG de referencia para la vista sur")
+    p.add_argument("--seed", type=int)
+
+    p = sub.add_parser("sprite", help="un solo sprite (bitforge), lo mas barato")
+    p.add_argument("descripcion")
+    p.add_argument("--negativo", help="que evitar")
+    p.add_argument("--estilo", help="PNG de referencia de estilo")
+    p.add_argument("--fuerza", type=int, default=60, help="0-100, peso del estilo")
+    p.add_argument("--paleta", help="PNG del que tomar la paleta")
+    p.add_argument("--direccion", default="south")
+    p.add_argument("--tam", type=int, default=32)
+    p.add_argument("--salida", default="sprite")
     p.add_argument("--seed", type=int)
 
     p = sub.add_parser("estilo", help="generar copiando el estilo de imagenes")
@@ -182,7 +232,8 @@ def main():
     p.add_argument("--seed", type=int)
 
     args = parser.parse_args()
-    {"saldo": cmd_saldo, "crear": cmd_crear, "estilo": cmd_estilo}[args.cmd](args)
+    {"saldo": cmd_saldo, "crear": cmd_crear,
+     "sprite": cmd_sprite, "estilo": cmd_estilo}[args.cmd](args)
     return 0
 
 
